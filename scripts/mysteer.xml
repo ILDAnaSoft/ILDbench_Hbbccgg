@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!-- ?xml-stylesheet type="text/xsl" href="http://ilcsoft.desy.de/marlin/marlin.xsl"? -->
+<!-- ?xml-stylesheet type="text/xsl" href="marlin.xsl"? -->
+
+<!-- Loading shared library : /mnt/home/home/kurata/myAna/ilc_test/mytest/build/lib/libmyProcessor.so.0.1.0 (libmyProcessor.so)-->
+
+<!--##########################################
+    #                                        #
+    #     Example steering file for marlin   #
+    #                                        #
+    ##########################################-->
+
+
+<marlin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ilcsoft.desy.de/marlin/marlin.xsd">
+ <execute>
+  <!processor name="MyAIDAProcessor"/>
+  <processor name="MymyZFinder"/>  
+  <processor name="MymyProcessor"/>  
+  <!processor name="MyLCIOOutputProcessor"/>  
+ </execute>
+
+         <!/ilcdata/suehara/flavtag/110511qqhh/00001-w16438001.slcio.slcio.flavtag.slcio>
+ <global>
+  <parameter name="LCIOInputFiles">
+    slcio.slcio
+  </parameter>
+  <!-- limit the number of processed records (run+evt): -->  
+  <parameter name="MaxRecordNumber" value="500001" />  
+  <parameter name="SkipNEvents" value="0" />  
+  <parameter name="SupressCheck" value="false" />  
+  <parameter name="GearXMLFile">
+    /home/ilc/kurata/myAna/myAna/gear/gear_ILD_l5_v02.xml           
+  </parameter>  
+  <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> DEBUG  </parameter> 
+  <parameter name="RandomSeed" value="1234567890" />
+ </global>
+
+ <processor name="MyAIDAProcessor" type="AIDAProcessor">
+ <!--Processor that handles AIDA files. Creates on directory per processor.  Processors only need to create and fill the histograms, clouds and tuples. Needs to be the first ActiveProcessor-->
+  <!-- compression of output file 0: false >0: true (default) -->
+  <parameter name="Compress" type="int">1 </parameter>
+  <!-- filename without extension-->
+  <parameter name="FileName" type="string">aida_file </parameter>
+  <!-- type of output file root (default) or xml )-->
+  <parameter name="FileType" type="string">root </parameter>
+  <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+  <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
+</processor>
+
+ <processor name="MyConditionsProcessor" type="ConditionsProcessor">
+ <!--ConditionsProcessor provides access to conditions data  transparently from LCIO files or a databases, using LCCD-->
+  <!--Initialization of a conditions database handler-->
+  <!--parameter name="DBCondHandler" type="StringVec">conditionsName /lccd/myfolder HEAD  </parameter-->
+  <!--Initialization of a conditions db file handler-->
+  <!--parameter name="DBFileHandler" type="StringVec">conditionsName conditions.slcio collectionName  </parameter-->
+  <!--Initialization string for conditions database-->
+  <parameter name="DBInit" type="string">localhost:lccd_test:calvin:hobbes </parameter>
+  <!--Initialization of a data file handler-->
+  <!--parameter name="DataFileHandler" type="StringVec">conditionsName  </parameter-->
+  <!--Initialization of a simple conditions file handler-->
+  <!--parameter name="SimpleFileHandler" type="StringVec">conditionsName conditions.slcio collectionName  </parameter-->
+  <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+  <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
+</processor>
+
+ <processor name="MyLCIOOutputProcessor" type="LCIOOutputProcessor">
+ <!--Writes the current event to the specified LCIO outputfile. Needs to be the last ActiveProcessor.-->
+  <!--drops the named collections from the event-->
+  <!--parameter name="DropCollectionNames" type="StringVec">TPCHits HCalHits  </parameter-->
+  <!--drops all collections of the given type from the event-->
+  <!--parameter name="DropCollectionTypes" type="StringVec">SimTrackerHit SimCalorimeterHit  </parameter-->
+  <!-- write complete objects in subset collections to the file (i.e. ignore subset flag)-->
+  <!--parameter name="FullSubsetCollections" type="StringVec">MCParticlesSkimmed  </parameter-->
+  <!--force keep of the named collections - overrules DropCollectionTypes (and DropCollectionNames)-->
+  <!--parameter name="KeepCollectionNames" type="StringVec">MyPreciousSimTrackerHits  </parameter-->
+  <!-- name of output file -->
+  <parameter name="LCIOOutputFile" type="string">outputfile.slcio </parameter>
+  <!--write mode for output file:  WRITE_APPEND or WRITE_NEW-->
+  <parameter name="LCIOWriteMode" type="string">None </parameter>
+  <!--will split output file if size in kB exceeds given value - doesn't work with APPEND and NEW-->
+  <!--parameter name="SplitFileSizekB" type="int">1992294 </parameter-->
+  <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+  <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
+</processor>
+
+ <processor name="MySimpleFastMCProcessor" type="SimpleFastMCProcessor">
+ <!--SimpleFastMCProcessor creates ReconstrcutedParticles from MCParticles according to the resolution given in the steering file.-->
+  <!--Resolution of charged particles in polar angle range:  d(1/P)  th_min  th_max-->
+  <parameter name="ChargedResolution" type="FloatVec">5e-05 0 1.5708  </parameter>
+  <!--Name of the MCParticle input collection-->
+  <parameter name="InputCollectionName" type="string" lcioInType="MCParticle">MCParticle </parameter>
+  <!--Name of the MCTruthMapping output collection-->
+  <parameter name="MCTruthMappingCollectionName" type="string" lcioOutType="LCRelation">MCTruthMapping </parameter>
+  <!--No reconstructed particles are produced for smaller momenta (in [GeV])-->
+  <parameter name="MomentumCut" type="float">0.001 </parameter>
+  <!--Resolution dE/E=A+B/sqrt(E/GeV) of neutral hadrons in polar angle range: A  B th_min  th_max-->
+  <parameter name="NeutralHadronResolution" type="FloatVec">0.04 0.5 0 1.5708  </parameter>
+  <!--Resolution dE/E=A+B/sqrt(E/GeV) of photons in polar angle range: A  B th_min  th_max-->
+  <parameter name="PhotonResolution" type="FloatVec">0.01 0.1 0 1.5708  </parameter>
+  <!--Name of the ReconstructedParticles output collection-->
+  <parameter name="RecoParticleCollectionName" type="string" lcioOutType="ReconstructedParticle">ReconstructedParticles </parameter>
+  <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+  <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
+</processor>
+
+ <processor name="MyStdHepReader" type="StdHepReader">
+ <!--Reads StdHep files as input and creates LCIO events with MCParticle collections. Make sure to not specify any LCIOInputFiles in the steering in order to read StdHep files.-->
+  <!--input file-->
+  <parameter name="StdHepFileName" type="string">input.stdhep </parameter>
+  <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+  <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
+</processor>
+
+ <processor name="MyTauProcessor3" type="TauProcessor3">
+ <!-- description not set by author -->
+  <!--Jet-finder output collection-->
+  <parameter name="JetCollection" type="string" lcioInType="ReconstructedParticle">Durham_6Jets </parameter>
+  <!--Number of maximum jets (for each p/n)-->
+  <parameter name="JetCut" type="int">6 </parameter>
+  <!--MC particle collection-->
+  <parameter name="MCPCollection" type="string" lcioInType="MCParticle">MCParticlesSkimmed </parameter>
+  <!--sequential number adding to ntuple-->
+  <parameter name="No" type="int">0 </parameter>
+  <!--Particle flow output collection-->
+  <parameter name="PFOCollection" type="string" lcioInType="ReconstructedParticle">PandoraPFOs </parameter>
+  <!--filename of whizard number - process name - cross section list-->
+  <parameter name="ProcessListFile" type="string">/home/suehara/ilcsoft/noproc.txt </parameter>
+  <!--Name of Root file-->
+  <parameter name="RootFileName" type="string">TauAnalysis.root </parameter>
+  <!--Number of maximum prongs-->
+  <parameter name="TrackCut" type="int">50 </parameter>
+  <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+  <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
+</processor>
+
+ <processor name="MyTestProcessor" type="TestProcessor">
+ <!--Simple processor to test the marlin application. Prints run and event number.-->
+  <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+  <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
+</processor>
+
+ <processor name="MymyZFinder" type="myZFinder">
+ <!-- description not set by author -->
+  <!--Include photons with reconstructed Z-->
+  <parameter name="AddPhotons" type="int">1 </parameter>
+  <!--Allow possibilit of cluster not track used for electrons-->
+  <parameter name="CanUseClusterEnergyForElectrons" type="int">1 </parameter>
+  <!--Minimum cosine of track-photon angle-->
+  <parameter name="CosTrackGammaCut" type="float">0.999 </parameter>
+  <!--Cut on electron ECAL energy-->
+  <parameter name="ElectronEcalEnergyCut" type="float">10 </parameter>
+  <!--Cut on Electron E/p cut-->
+  <parameter name="ElectronEoverPCutHigh" type="float">1.3 </parameter>
+  <!--Cut on Electron E/p cut-->
+  <parameter name="ElectronEoverPCutLow" type="float">0.5 </parameter>
+  <!--Cut on Electron HCAL energy-->
+  <parameter name="ElectronHcalEnergyCut" type="float">10 </parameter>
+  <!--Momentum Cut for fermion from Z decay-->
+  <parameter name="FermionMomentumCut" type="float">10 </parameter>
+  <!--Input Particle Collection Name -->
+  <parameter name="InputParticleCollectionName" type="string" lcioInType="ReconstructedParticle"> PandoraPFOs </parameter>
+  <!--Input Particle Collection Name 2-->
+  <parameter name="InputParticleCollectionName2" type="string" lcioInType="ReconstructedParticle"> PandoraPFOs </parameter>
+  <!--Maximum difference between candidate and Z mass-->
+  <parameter name="MaxDeltaMz" type="float">50 </parameter>
+  <!--Cut on muon ECAL energy-->
+  <parameter name="MuonEcalEnergyCut" type="float">2.5 </parameter>
+  <!--Cut on Muon HCAL energy-->
+  <parameter name="MuonHcalEnergyCut" type="float">10 </parameter>
+  <!--Cut on Muon HCAL energy (alt)-->
+  <parameter name="MuonHcalEnergyCut1" type="float">5 </parameter>
+  <!--Output Particle Collection Name -->
+  <parameter name="OutputParticleCollectionName" type="string" lcioOutType="ReconstructedParticle">Zll </parameter>
+  <!--Print certain messages-->
+  <parameter name="Printing" type="int">1 </parameter>
+  <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+  <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
+  <!--Z decay mode-->
+  <parameter name="ZDecay" type="string">ee </parameter>
+</processor>
+
+ <processor name="MymyProcessor" type="myProcessor">
+ <!-- description not set by author -->
+  <!--flag for collecting jets-->
+  <parameter name="JetColFlg" type="bool">true </parameter>
+  <!--Jet-finder output collection-->
+  <parameter name="JetCollection" type="string" lcioInType="ReconstructedParticle"> RefinedJets </parameter>
+  <!--Number of maximum jets (for each p/n)-->
+  <parameter name="JetCut" type="int">6 </parameter>
+  <!--flag for collecting tracks in the jet-->
+  <parameter name="JettrkFlg" type="bool"> true </parameter>
+  <!--Jet-finder output collection-->
+  <parameter name="LepCollection" type="string" lcioInType="ReconstructedParticle"> Isolep </parameter>
+  <parameter name="ZCollection" type="string" lcioInType="ReconstructedParticle"> Zll </parameter>
+  <!--flag for collecting leptons-->
+  <parameter name="LepColFlg" type="bool"> true </parameter>
+  <!--flag for calculating leptons-->
+  <parameter name="metCalFlg" type="bool"> true </parameter>
+  <!--MC particle collection-->
+  <parameter name="MCPCollection" type="string" lcioInType="MCParticle">MCParticle </parameter>
+  <!--flag for matching jets and hepg-->
+  <parameter name="jetMatchingFlg" type="bool">true </parameter>
+  <!--flag for matching leptons and hepg-->
+  <parameter name="lepMatchingFlg" type="bool">true </parameter>
+  <!--sequential number adding to ntuple-->
+  <parameter name="metMatchingFlg" type="bool">true </parameter>
+  <!--sequential number adding to ntuple-->
+  <parameter name="No" type="int">0 </parameter>
+  <!--Particle flow output collection-->
+  <parameter name="PFOCollection" type="string" lcioInType="ReconstructedParticle"> PandoraPFOs </parameter>
+  <!--filename of whizard number - process name - cross section list-->
+  <parameter name="ProcessListFile" type="string">/home/suehara/ilcsoft/noproc.txt </parameter>
+  <!--Name of Root file-->
+  <parameter name="RootFileName" type="string"> root.root </parameter>
+  <!--Number of maximum prongs-->
+  <parameter name="TrackCut" type="int">50 </parameter>
+  <!--verbosity level of this processor ("DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT")-->
+  <!--parameter name="Verbosity" type="string">DEBUG </parameter-->
+</processor>
+
+
+</marlin>
